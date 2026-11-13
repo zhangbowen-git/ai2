@@ -1,0 +1,27 @@
+server:
+  port: 8081
+
+spring:
+  application:
+    name: order-logistics-mcp-server
+  ai:
+    mcp:
+      server:
+        # MCP 服务名称与版本（客户端 initialize 时可见）
+        name: order-logistics-mcp
+        version: 1.0.0
+        # SYNC：基于阻塞调用模型，配合 Spring MVC
+        type: SYNC
+        # Streamable HTTP 传输（替代旧版 SSE Transport）
+        protocol: STREAMABLE
+        # 可选：服务说明，会下发给客户端
+        instructions: 智能客服 MCP 服务，提供订单查询、物流轨迹查询、退货申请提交能力。
+        capabilities:
+          tool: true
+          resource: true
+          prompt: true
+        request-timeout: 30s
+
+logging:
+  level:
+    com.logistics.mcp: info

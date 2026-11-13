@@ -1,0 +1,97 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: order-logistics-ai-client
+  # MySQL 数据源
+  datasource:
+    url: jdbc:mysql://localhost:3306/aitest2?useUnicode=true&characterEncoding=utf8&serverTimezone=Asia/Shanghai&useSSL=false&allowPublicKeyRetrieval=true&createDatabaseIfNotExist=true
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    username: root
+    password: root
+  ai:
+    # ============ Chat / Embedding 模型（通义千问 Qwen，OpenAI 兼容协议） ============
+    # 通过 DashScope OpenAI 兼容模式接入 Qwen
+    openai:
+      api-key: ${QIANWEN_API_KEY}
+      base-url: ${QIANWEN_ENDPOINT:https://dashscope.aliyuncs.com/compatible-mode/v1}
+      chat:
+        options:
+          model: ${CHAT_MODEL:qwen3.7-flash}
+          temperature: 0.3
+          # 关闭 Qwen3 深度思考（客服场景需快速响应；意图分类/工具选择无需长链路推理）
+          extra-body:
+            enable_thinking: false
+      embedding:
+        options:
+          # Qwen 文本向量化模型，向量维度 1536，须与 Milvus embedding-dimension 一致
+          model: ${EMBEDDING_MODEL:text-embedding-v3}
+    # ============ Milvus 向量数据库 ============
+    vectorstore:
+      milvus:
+        client:
+          uri: http://localhost:19530
+          secure: false
+          # Token 鉴权（格式：用户名:密码）
+          token: root:Milvus
+        database-name: default
+        collection-name: knowledge_vectors
+        embedding-dimension: 1024
+        metric-type: COSINE
+        index-type: IVF_FLAT
+        # 2.0 需显式开启 schema 初始化
+        initialize-schema: true
+    # ============ MCP 客户端（连接独立 MCP Server） ============
+    mcp:
+      client:
+        type: SYNC
+        initialized: true
+        # 需大于 Elicitation 用户确认等待时长（agent.elicitation.await-timeout-seconds=120）
+        request-timeout: 150s
+        streamable-http:
+          connections:
+            # 连接名 order-mcp，@McpElicitation(clients="order-mcp") 必须与此一致
+            order-mcp:
+              url: ${MCP_SERVER_URL:http://localhost:8081}
+    # ============ 工具调用保护：限制单轮最大工具调用次数，防止循环调用 ============
+    tools:
+      limits:
+        max-total-tool-calls: 10
+        on-limit-exceeded: RETURN_ERROR_RESPONSE
+
+# ============ 业务自定义配置 ============
+agent:
+  # 知识库默认切片参数
+  kb:
+    default-chunk-size: 500
+    default-chunk-overlap: 100
+    # 向量检索默认参数
+    default-top-k: 4
+    similarity-threshold: 0.5
+  # Elicitation 等待用户确认超时时间（秒）
+  elicitation:
+    await-timeout-seconds: 120
+
+# MyBatis-Plus
+mybatis-plus:
+  configuration:
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+    map-underscore-to-camel-case: true
+  global-config:
+    banner: false
+    db-config:
+      id-type: assign_id
+
+
+
+logging:
+  level:
+    com.logistics.agent: info
+
+# ============ 通义千问原始配置（参考，实际由 spring.ai.openai 映射） ============
+qianwen:
+  api:
+    key: ${QIANWEN_API_KEY}
+    endpoint: https://dashscope.aliyuncs.com/compatible-mode/v1
+    model: qwen3.5-plus

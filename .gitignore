@@ -1,0 +1,18 @@
+# IDE
+.idea/
+.vscode/
+*.iml
+
+# Build output
+**/target/
+*.class
+
+# Runtime logs and local files
+.runlogs/
+*.log
+.browser-profile*/
+.chrome-profile*/
+
+# OS files
+.DS_Store
+Thumbs.db

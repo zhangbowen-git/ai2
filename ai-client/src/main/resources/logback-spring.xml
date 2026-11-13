@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+    <!-- 抑制 Qwen 流式空 choices chunk 导致的 ChunkMerger 噪音日志 -->
+    <logger name="org.springframework.ai.chat.model.MessageAggregator" level="OFF"/>
+    <!-- 抑制 OpenAiChatModel 内部流式聚合警告 -->
+    <logger name="org.springframework.ai.openai.OpenAiChatModel" level="WARN"/>
+
+    <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</pattern>
+        </encoder>
+    </appender>
+
+    <root level="INFO">
+        <appender-ref ref="CONSOLE"/>
+    </root>
+</configuration>
