@@ -12,6 +12,7 @@
 *.log
 .browser-profile*/
 .chrome-profile*/
+.tools/
 
 # OS files
 .DS_Store
